@@ -51,14 +51,21 @@ export default class Preloader extends Phaser.Scene {
     );
     this.load.image("ground", "assets/world/Tile-1.jpg");
     this.load.image("star", "assets/star.png");
+    this.load.image("bg1", "assets/branch/bg.jpg");
 
     this.load.image("branch", "assets/branch/branch.png");
-    this.load.image("rope", "assets/branch/rope.jpg");
+    this.load.image("rope", "assets/branch/rope.png");
     this.load.image("udochka", "assets/branch/udochka.png");
     this.load.image("hook", "assets/branch/hook.png");
+    this.load.image("worm", "assets/branch/worm.png");
+    this.load.image("water", "assets/branch/water.jpg");
+    this.load.audio(
+      "music",
+      "assets/branch/scott-buckley-reverie(chosic.com).mp3"
+    );
   }
 
   create() {
-    this.scene.start("Game");
+    this.scene.start("Menu");
   }
 }
