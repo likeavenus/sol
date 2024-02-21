@@ -59,13 +59,19 @@ export default class Preloader extends Phaser.Scene {
     this.load.image("hook", "assets/branch/hook.png");
     this.load.image("worm", "assets/branch/worm.png");
     this.load.image("water", "assets/branch/water.jpg");
-    this.load.audio(
-      "music",
-      "assets/branch/scott-buckley-reverie(chosic.com).mp3"
-    );
+    this.load.image("clown", "assets/branch/clownfish.png");
+    this.load.image("hut", "assets/branch/Fishing_hut.png");
+    this.load.image("droplet", "assets/branch/droplet.png");
+
+    // this.load.audio(
+    //   "music",
+    //   "assets/branch/scott-buckley-reverie(chosic.com).mp3"
+    // );
+    this.load.audio("zabros", "assets/branch/zabros.mp3");
+    this.load.audio("smativanie", "assets/branch/smativanie.mp3");
   }
 
   create() {
-    this.scene.start("Menu");
+    this.scene.start("Game");
   }
 }
