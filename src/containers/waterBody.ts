@@ -20,7 +20,8 @@ export default class WaterBody {
     {
       dampening = 0.025,
       renderDepth = 1,
-      spread = 0.25,
+      spread = 0.09,
+      // spread = 0.25,
       tension = 0.025,
       texture,
     } = {}
@@ -61,7 +62,6 @@ export default class WaterBody {
       .setFillStyle(0x145dd1, 0)
       .setDepth(99)
       .setOrigin(0, 0);
-
     if (typeof texture === "string") {
       this.background = context.add
         .tileSprite(this.x, this.y, this.w, this.h, this.texture)
@@ -86,7 +86,7 @@ export default class WaterBody {
         }
       );
       this.sensor.label = "water";
-
+      // this.body.collisionFilter.category = 0b0101;
       this.debugGraphic = context.add.graphics({
         fillStyle: {
           color: 0xffffff,

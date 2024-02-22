@@ -49,6 +49,7 @@ export default class Preloader extends Phaser.Scene {
       "assets/lizard/lizard.png",
       "assets/lizard/lizard.json"
     );
+    this.load.atlas("bat", "assets/branch/bat.png", "assets/branch/bat.json");
     this.load.image("ground", "assets/world/Tile-1.jpg");
     this.load.image("star", "assets/star.png");
     this.load.image("bg1", "assets/branch/bg.jpg");

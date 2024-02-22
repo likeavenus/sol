@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import Preloader from "./Preload";
 import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 import { getDialog } from "./constants";
-import { createLizardAnims } from "../characters/lizard/lizardAnims";
+import { createLizardAnims } from "../characters/lizard-example/lizardAnims";
 import Rope from "../containers/rope";
 import Paused from "./Paused";
 // import Lizard from "../characters/lizard/lizard";
@@ -10,6 +10,8 @@ import Menu from "./Menu";
 import Fish from "../characters/fish";
 import WaterBodyPlugin from "../containers/waterbodyPlugin";
 import WaterBody from "../containers/waterBody";
+import Bat from "../containers/bat";
+import Sol from "../characters/sol/sol";
 
 const MIN = Phaser.Math.DegToRad(-180);
 const MAX = Phaser.Math.DegToRad(180);
@@ -58,6 +60,7 @@ class Game extends Phaser.Scene {
   collisionCategory2 = 0b0010;
   collisionCategory3 = 0b0100;
   collisionCategory4 = 0b1000;
+  collisionWaterCategory = 0b0101;
 
   constructor() {
     super("Game");
@@ -133,14 +136,8 @@ class Game extends Phaser.Scene {
     };
     createLizardAnims(this.anims);
     this.GROUND_COLLISION_GROUP = this.matter.world.nextCategory();
-
-    this.lizard = this.matter.add
-      .sprite(550, 2000, "lizard", undefined, {
-        label: "lizard",
-      })
-      .setScale(3)
-      .setFixedRotation()
-      .setDepth(6);
+    this.lizard = new Sol(this, 550, 2100, "lizard", undefined);
+    console.log(this.lizard);
     this.lizard.setCollisionCategory(this.collisionCategory1);
     this.lizard.setCollidesWith(
       this.collisionCategory1 |
@@ -149,7 +146,9 @@ class Game extends Phaser.Scene {
     );
     this.lizard.items = [];
     this.lizard.itemInArm = null;
-    this.lizard.setMass(140);
+    // this.lizard.setMass(140);
+
+    this.bat = new Bat(this, 660, 2500, "bat", undefined);
 
     this.rod = [];
     // this.stick = this.add.rectangle(
@@ -160,7 +159,7 @@ class Game extends Phaser.Scene {
     //   0x00aa1100
     // );
 
-    this.hut = this.matter.add.image(620, 2700, "hut", undefined, {
+    this.hut = this.matter.add.image(620, 2680, "hut", undefined, {
       label: "hut",
       isStatic: true,
       isSensor: true,
@@ -234,6 +233,8 @@ class Game extends Phaser.Scene {
       tension: 0.01,
       texture: "water",
     }) as WaterBody;
+
+    // this.waterbody.setCollisionCategory(this.collisionWaterCategory);
 
     this.input.on("pointerdown", (pointer) => {
       console.log(pointer);
@@ -326,16 +327,16 @@ class Game extends Phaser.Scene {
 
     this.cameras.main.startFollow(this.lizard);
 
-    this.lizard.setOnCollide((data: MatterJS.ICollisionPair) => {
-      this.isTouchingGround = true;
+    // this.lizard.setOnCollide((data: MatterJS.ICollisionPair) => {
+    //   this.isTouchingGround = true;
 
-      const { bodyA, bodyB } = data;
+    //   const { bodyA, bodyB } = data;
 
-      if (bodyA.label === "worm" || bodyB.label === "worm") {
-        this.collectWorm();
-        this.worm.visible = false;
-      }
-    });
+    //   if (bodyA.label === "worm" || bodyB.label === "worm") {
+    //     this.collectWorm();
+    //     this.worm.visible = false;
+    //   }
+    // });
 
     // this.matter.world.on("collisionstart", (event, bodyA, bodyB) => {
     //   // Обработка начала столкновения между bodyA и bodyB
@@ -444,9 +445,6 @@ class Game extends Phaser.Scene {
     this.matter.world.convertTilemapLayer(groundLayer2);
     this.matter.world.convertTilemapLayer(groundLayer3);
 
-    // console.log("groundLayer3: ", groundLayer3);
-    console.log(groundLayer2);
-
     this.matter.world.on("collisionend", (e, bodyA, bodyB) => {
       if (
         e.pairs.some(
@@ -458,16 +456,19 @@ class Game extends Phaser.Scene {
     });
 
     this.matter.world.on("collisionstart", (e, bodyA, bodyB) => {
+      // console.log(
+      //   e.pairs.filter((pair) => {
+      //     console.log(pair);
+      //   })
+      // );
       if (
         e.pairs.some(
           (pair) => pair.bodyA.label == "water" && pair.bodyB.label == "hook"
         )
       ) {
         const i = this.waterBody.columns.findIndex(
-          (col, i) => col.x + 370 >= this.rod.at(-2).x && i
+          (col, i) => col.x + 370 >= bodyB.position.x && i
         );
-        console.log(this.rod.at(-2).x);
-        console.log("waterBody: ", this.waterBody.columns);
 
         const speed = bodyB.speed * 3;
         const numDroplets = Math.ceil(bodyB.speed) * 6;
@@ -479,15 +480,43 @@ class Game extends Phaser.Scene {
           numDroplets
         );
       }
+      if (
+        e.pairs.some(
+          (pair) => pair.bodyA.label == "lizard" && pair.bodyB.label == "water"
+        )
+      ) {
+        const i = this.waterBody.columns.findIndex(
+          (col, i) => col.x + 370 >= bodyA.position.x && i
+        );
+
+        const speed = bodyA.speed * 3;
+        const numDroplets = Math.ceil(bodyA.speed) * 6;
+        this.lizard.setFrictionAir(0.25);
+        this.waterBody.splash(
+          Phaser.Math.Clamp(i, 0, this.waterBody.columns.length - 1),
+          speed,
+          numDroplets
+        );
+      }
     });
 
     this.matter.world.on("collisionactive", (e, o1, o2) => {
+      if (
+        e.pairs.some(
+          (pair) => pair.bodyA.label == "lizard" && pair.bodyB.label == "water"
+        )
+      ) {
+        console.log("active");
+
+        this.lizard.setFrictionAir(0.25);
+      }
       if (
         e.pairs.some(
           (pair) => pair.bodyA.label == "water" && pair.bodyB.label == "hook"
         )
       ) {
         this.rod.at(-2).inWater = true;
+        // this.rod.at(-2).setFrictionAir(0.25);
       }
 
       if (
@@ -581,33 +610,12 @@ class Game extends Phaser.Scene {
 
   update(time: number, delta: number) {
     this.starsText.setText(`Worms: ${this.starsSummary}`);
-    // if (!this.lizard.flipX) {
-    //   this.stick.copyPosition({ x: this.lizard.x + 70, y: this.lizard.y });
-    // } else {
-    //   this.stick.copyPosition({ x: this.lizard.x - 70, y: this.lizard.y });
-    // }
 
     const size = this.animationNames.length;
     const { left, right, up, space } = this.cursors;
     const speed = 5;
-    if (this.cursors.left.isDown) {
-      this.lizard.setVelocityX(-speed);
-      this.lizard.flipX = true;
-      this.lizard.anims.play("lizard-run", true);
-    } else if (this.cursors.right.isDown) {
-      this.lizard.setVelocityX(speed);
-      this.lizard.flipX = false;
-      this.lizard.anims.play("lizard-run", true);
-    } else {
-      this.lizard.setVelocityX(0);
-      this.lizard.anims.play("lizard-idle", true);
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(up) && this.isTouchingGround) {
-      this.lizard.setVelocityY(-10);
-      this.isTouchingGround = false;
-    }
-
+    this.lizard.update(this.cursors);
+    this.bat.update(time);
     if (this.starsSummary > 0 && this.worm.isAlive) {
       this.worm.visible = true;
       this.worm.isAlive = false;
@@ -728,31 +736,6 @@ class Game extends Phaser.Scene {
     lastRod.name = "hook";
     lastRod.label = "hook";
     lastRod.inWater = false;
-    // lastRod.setOnCollide((data: MatterJS.ICollisionPair) => {
-    //   const { bodyA, bodyB } = data;
-    //   // console.log(bodyA.label, bodyB.label);
-    //   // console.log("bodyA.label: ", bodyA.label);
-
-    //   if (bodyA.label === "water" || bodyB.label === "hook") {
-    //     lastRod.inWater = true;
-    //     console.log("inWater!");
-    //     const i = this.waterBody.columns.findIndex(
-    //       (col, i) => col.x >= bodyB.gameObject.x && i
-    //     );
-    //     console.log(i);
-    //     console.log(bodyB);
-    //     const speed = bodyB.speed * 3;
-    //     const numDroplets = Math.ceil(bodyB.speed) * 5;
-
-    //     // bodyB..setFrictionAir(0.25);
-    //     this.waterBody.splash(
-    //       Phaser.Math.Clamp(i, 0, this.waterBody.columns.length - 1),
-    //       speed,
-    //       numDroplets
-    //     );
-    //   }
-    // });
-    // this.matter.collision
 
     // this.collision.addOnCollideStart({
     //   objectA: body.sensor,
@@ -770,18 +753,6 @@ class Game extends Phaser.Scene {
     //       numDroplets
     //     );
     //   },
-    // });
-
-    // console.log("waterBody: ", waterBody);
-    console.log("lizard: ", this.lizard);
-
-    // lastRod.setOnCollideEnd((data: MatterJS.ICollisionPair) => {
-    //   const { bodyA, bodyB } = data;
-
-    //   if (bodyA.label === "hook" || bodyB.label === "hook") {
-    //     lastRod.inWater = false;
-    //     console.log("inWater", lastRod.inWater);
-    //   }
     // });
   }
 
