@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "gh-pages": "^5.0.0",
-    "phaser": "^3.70.0",
+    "phaser": "^3.80.0",
     "phaser3-rex-plugins": "^1.60.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

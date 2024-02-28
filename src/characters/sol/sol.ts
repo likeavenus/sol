@@ -29,6 +29,7 @@ export default class Sol extends Phaser.Physics.Matter.Sprite {
     this.scene.add.existing(this);
     createLizardAnims(this.scene.anims);
     this.anims.play("lizard-idle");
+    this.setMass(1);
 
     this.setOnCollide((data: MatterJS.ICollisionPair) => {
       this.isTouchingGround = true;

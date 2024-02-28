@@ -92,17 +92,17 @@ class Game extends Phaser.Scene {
     );
     /** music */
     this.sound.pauseOnBlur = false;
-    // this.music = this.sound.add("music", {
-    //   volume: 0.2,
-    //   loop: true,
-    // });
+    this.music = this.sound.add("music", {
+      volume: 0.2,
+      loop: true,
+    });
     if (!this.sound.locked) {
       // already unlocked so play
       // this.music.play();
     } else {
       // wait for 'unlocked' to fire and then play
       this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
-        // this.music.play();
+        this.music.play();
       });
     }
     this.game.events.on(Phaser.Core.Events.BLUR, () => {
@@ -144,6 +144,8 @@ class Game extends Phaser.Scene {
         this.collisionCategory2 |
         this.collisionCategory4
     );
+
+    this.lizard.setPipeline("Light2D");
     this.lizard.items = [];
     this.lizard.itemInArm = null;
     // this.lizard.setMass(140);
@@ -164,6 +166,7 @@ class Game extends Phaser.Scene {
       isStatic: true,
       isSensor: true,
     });
+    this.hut.setPipeline("Light2D");
     this.hut.setDepth(4);
     this.hut.setScale(2);
 
@@ -489,8 +492,8 @@ class Game extends Phaser.Scene {
           (col, i) => col.x + 370 >= bodyA.position.x && i
         );
 
-        const speed = bodyA.speed * 3;
-        const numDroplets = Math.ceil(bodyA.speed) * 6;
+        const speed = bodyA.speed * 2;
+        const numDroplets = Math.ceil(bodyA.speed) * 5;
         this.lizard.setFrictionAir(0.25);
         this.waterBody.splash(
           Phaser.Math.Clamp(i, 0, this.waterBody.columns.length - 1),
@@ -506,8 +509,6 @@ class Game extends Phaser.Scene {
           (pair) => pair.bodyA.label == "lizard" && pair.bodyB.label == "water"
         )
       ) {
-        console.log("active");
-
         this.lizard.setFrictionAir(0.25);
       }
       if (
@@ -578,12 +579,10 @@ class Game extends Phaser.Scene {
     // }, 1000);
     this.lights.setAmbientColor(0x808080);
 
-    this.events.on("resume", () => {
-      console.log("resume");
-    });
-    // this.light = this.lights
-    //   .addLight(this.boy.x, this.boy.y, 280)
-    //   .setIntensity(3);
+    this.events.on("resume", () => {});
+    this.light = this.lights
+      .addLight(this.lizard.x, this.lizard.y, 512)
+      .setIntensity(2);
 
     // this.cameras.main.postFX.addTiltShift(0.9, 2.0, 0.4);
     // const lizard = this.physics.add.sprite(256, 500, "lizard").setScale(3.5);
@@ -610,6 +609,9 @@ class Game extends Phaser.Scene {
 
   update(time: number, delta: number) {
     this.starsText.setText(`Worms: ${this.starsSummary}`);
+
+    this.light.x = this.lizard.x;
+    this.light.y = this.lizard.y;
 
     const size = this.animationNames.length;
     const { left, right, up, space } = this.cursors;
@@ -639,7 +641,6 @@ class Game extends Phaser.Scene {
       const randomEventId = Math.floor(Math.random() * 200);
 
       if (randomEventId === 5 && this.starsSummary > 0) {
-        // console.log("randomEventId: ", randomEventId);
         lastRod.setPosition(
           lastRod.x + (Math.random() - 2.5) * 5,
           lastRod.y + 5
@@ -763,14 +764,14 @@ class Game extends Phaser.Scene {
     }
 
     // pause music or stop all sounds
-    // this.music.pause();
+    this.music.pause();
     this.scene.pause();
 
     // Paused Scene will call the onResume callback when ready
     this.scene.run("Menu", {
       onResume: () => {
         // resume music
-        // this.music.resume();
+        this.music.resume();
         this.scene.pause("paused");
         this.scene.resume("Game");
       },

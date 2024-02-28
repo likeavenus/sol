@@ -29,12 +29,15 @@ export default class Bat extends Phaser.Physics.Matter.Sprite {
     this.scene.add.existing(this);
     createBatAnims(this.scene.anims);
     this.anims.play("bat-move");
+    this.setPipeline("Light2D");
   }
 
   update(time: number): void {
-    // let angle = Math.sin(time / 100) * 0.5;
-    // let distance = 100;
-    // this.x = this.x + angle * distance;
+    let angle = Math.sin(time / 100) * 0.5;
+    let distance = 10;
+    this.x = this.x + angle * distance;
+    this.y = this.y + angle * distance;
+
     // if (prevX > this.x) {
     //   this.flipX = true;
     // } else {

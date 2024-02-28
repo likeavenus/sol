@@ -45,6 +45,8 @@ export default class WaterBody {
     this.texture = texture;
 
     const coords = [0, this.h - this.depth, this.w, this.h - this.depth];
+    console.log(coords);
+
     const surface = new Phaser.Geom.Line(...coords);
     const points = surface.getPoints(0, 20);
 
